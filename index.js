@@ -1,11 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const {MongoClient, ServerApiVersion} = require('mongodb');
+const {MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
-
-console.log('dotenv ', process.env.DB_NAME);
 
 // middle are
 app.use(express.json());
@@ -28,9 +26,31 @@ async function run() {
         await client.connect();
 
         const serviceCollection = client.db('carDoctor').collection('services');
+        const bookingCollection = client.db('carDoctor').collection('bookings');
 
+        // Service Related API
         app.get('/services', async (req, res) => {
             const result = await serviceCollection.find().toArray();
+            res.send(result);
+        });
+
+        app.get('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await serviceCollection.findOne(query);
+            res.send(result);
+        });
+
+        // Booking Related API
+        app.post('/bookings', async (req, res) => {
+            const data = req.body;
+            console.log(data);
+            const result = await bookingCollection.insertOne(data);
+            res.send(result);
+        });
+
+        app.get('/bookings', async (req, res) => {
+            const result = await bookingCollection.find().toArray();
             res.send(result);
         });
 
