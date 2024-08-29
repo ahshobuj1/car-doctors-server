@@ -42,15 +42,30 @@ async function run() {
         });
 
         // Booking Related API
+
+        // With query params
+        app.get(`/bookings`, async (req, res) => {
+            console.log(req.query.email);
+            let filter = {};
+            if (req.query?.email) {
+                filter = {email: req.query.email};
+            }
+            const result = await bookingCollection.find(filter).toArray();
+            res.send(result);
+        });
+
+        // With email params
+        /* app.get(`/bookings/:email`, async (req, res) => {
+            const email = req.params.email;
+            const filter = {email: email};
+            const result = await bookingCollection.find(filter).toArray();
+            res.send(result);
+        }); */
+
         app.post('/bookings', async (req, res) => {
             const data = req.body;
             console.log(data);
             const result = await bookingCollection.insertOne(data);
-            res.send(result);
-        });
-
-        app.get('/bookings', async (req, res) => {
-            const result = await bookingCollection.find().toArray();
             res.send(result);
         });
 
