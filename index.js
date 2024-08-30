@@ -2,13 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const {MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
 require('dotenv').config();
-var jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middle are
+app.use(cookieParser());
 app.use(express.json());
-app.use(cors());
+app.use(
+    cors({
+        origin: ['http://localhost:5173', 'http://localhost:5174'],
+        credentials: true,
+    })
+);
 
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@ecommercedatabase.la5qrjd.mongodb.net/?retryWrites=true&w=majority&appName=ecommerceDatabase`;
 
@@ -53,7 +60,9 @@ async function run() {
 
             console.log('jwt token', token);
 
-            res.send(token);
+            res.cookie('token', token, {httpOnly: true, secure: false}).send(
+                token
+            );
         });
 
         // With query params
@@ -65,15 +74,9 @@ async function run() {
             }
             const result = await bookingCollection.find(filter).toArray();
             res.send(result);
+            // cookie read
+            console.log('jwt token  ', req.cookies);
         });
-
-        // With email params
-        /* app.get(`/bookings/:email`, async (req, res) => {
-            const email = req.params.email;
-            const filter = {email: email};
-            const result = await bookingCollection.find(filter).toArray();
-            res.send(result);
-        }); */
 
         app.post('/bookings', async (req, res) => {
             const data = req.body;

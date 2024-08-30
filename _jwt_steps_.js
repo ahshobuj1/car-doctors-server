@@ -20,6 +20,22 @@
  * 4. create api set to cookie. http only,secure, sameSite
  * 5. from client side : axios with credentials: true
  * 6. cors setup: origin and credentials: true
+ *      app.use(
+            cors({
+                origin: [url],
+                credentials: true,
+                })
+            );  
+ */
+/**
  *
+ * * set JWT to cookie
+ *
+ * * res.cookie('name',token,{httpOnly:true, secure: true/false})
+ *
+ * 1. for secure api calls
+ * 2. server side: install cookie parser and use it as a middleware
+ * 3. req.cookies
+ * 4. on the client side: make api call using axios withCredentials: true (or credentials include while using fetch)
  *
  */
