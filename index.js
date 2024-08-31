@@ -36,6 +36,27 @@ async function run() {
         const serviceCollection = client.db('carDoctor').collection('services');
         const bookingCollection = client.db('carDoctor').collection('bookings');
 
+        //Auth related API
+        // create jwt token and set cookie
+
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1h',
+            });
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+            }).send({success: true});
+        });
+
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            res.clearCookie('token', {maxAge: 0}).send({success: true});
+        });
+
         // Service Related API
         app.get('/services', async (req, res) => {
             const result = await serviceCollection.find().toArray();
@@ -51,31 +72,18 @@ async function run() {
 
         // Booking Related API
 
-        // create jwt token and set cookie
-        app.post('/jwt', (req, res) => {
-            const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1h',
-            });
-
-            console.log('jwt token', token);
-
-            res.cookie('token', token, {httpOnly: true, secure: false}).send(
-                token
-            );
-        });
-
         // With query params
         app.get(`/bookings`, async (req, res) => {
             console.log(req.query.email);
+            // cookie read
+            console.log('jwt token', req.cookies);
+
             let filter = {};
             if (req.query?.email) {
                 filter = {email: req.query.email};
             }
             const result = await bookingCollection.find(filter).toArray();
             res.send(result);
-            // cookie read
-            console.log('jwt token  ', req.cookies);
         });
 
         app.post('/bookings', async (req, res) => {
