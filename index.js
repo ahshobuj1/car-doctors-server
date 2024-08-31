@@ -28,6 +28,30 @@ const client = new MongoClient(uri, {
     },
 });
 
+// * middlewares
+
+const verifyToken = (req, res, next) => {
+    const token = req.cookies.token;
+    console.log('verifyToken', token);
+    if (!token) {
+        return res.status(401).send('unauthorized access');
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send('unauthorized access');
+        }
+        req.user = decoded;
+        console.log('req user decoded', req.user);
+        next();
+    });
+};
+
+//logger for testing
+const logger = (req, res, next) => {
+    console.log('middlewares', req.method, req.url);
+    next();
+};
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -73,8 +97,12 @@ async function run() {
         // Booking Related API
 
         // With query params
-        app.get(`/bookings`, async (req, res) => {
+        app.get(`/bookings`, logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
+            if (req?.user?.email !== req?.query?.email) {
+                return res.status(403).send({message: 'forbidden user'});
+            }
+
             // cookie read
             console.log('jwt token', req.cookies);
 
